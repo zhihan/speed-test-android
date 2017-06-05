@@ -15,6 +15,9 @@ import android.widget.BaseAdapter
 
 
 class MainActivity : AppCompatActivity() {
+	val downloadFile: String = "http://2.testdebit.info/fichiers/1Mo.dat"
+	val connectServer: String = "www.google.com"
+	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
@@ -22,22 +25,32 @@ class MainActivity : AppCompatActivity() {
 		val rv = findViewById(R.id.my_list_view) as ListView
 		val adapter = MainAdapter()
 		rv.setAdapter(adapter)
-		Log.d("MyApp", "Start")
 
-		val downloadTest = DownloadTest(adapter,
-		"http://2.testdebit.info/fichiers/1Mo.dat", { -> Unit})
-		val connectTest = ConnectTest(adapter,
-		"www.google.com", { -> downloadTest.execute()})
-		connectTest.execute()
+		val btn = findViewById(R.id.fab)
+		btn.setOnClickListener(object : View.OnClickListener {
+			override fun onClick(view: View) {
+				Log.d("SpeedTest", "Starting.")
+				adapter.reset()
+				val downloadTest = DownloadTest(adapter, downloadFile, { -> Unit})
+				val connectTest = ConnectTest(adapter, connectServer,
+				{ -> downloadTest.execute()})
+				connectTest.execute()
+			}
+		})
   }
 }
 
 
-
 class MainAdapter() : BaseAdapter() {
 	var connectTestResult: ConnectTestResult = ConnectTestResult.Fail("")
-	var downloadTestResult: DownloadTestResult = DownloadTestResult.None("")
+	var downloadTestResult: DownloadTestResult = DownloadTestResult.NotStarted
 
+	fun reset() {
+		connectTestResult = ConnectTestResult.Fail("")
+		downloadTestResult = DownloadTestResult.NotStarted
+		notifyDataSetChanged()
+	}
+	
 	override fun getCount(): Int { return 2 }
 	override fun getItemId(position: Int): Long { return position.toLong()}
 	override fun getItem(position: Int):Object { return "1" as Object}
@@ -73,7 +86,11 @@ class MainAdapter() : BaseAdapter() {
 				val r = downloadTestResult as DownloadTestResult.Pass
 				tv.setText("Download 1Mb in " + r.time + "ms.")
 			}
-			is DownloadTestResult.None -> tv.setText("waiting")
+			is DownloadTestResult.Error -> {
+				val r = downloadTestResult as DownloadTestResult.Error
+				tv.setText("Error: " + r.error)
+			}
+			DownloadTestResult.NotStarted -> tv.setText("Waiting")
 		}
 	}
 }

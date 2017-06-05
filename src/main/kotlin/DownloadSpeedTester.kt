@@ -15,10 +15,15 @@ sealed class DownloadTestResult {
 	data class Timeout(val error:String) : DownloadTestResult()
 	data class Pass(val time: Int): DownloadTestResult()
 	data class Error(val error: String): DownloadTestResult()
-	data class None(val msg: String): DownloadTestResult()
+	object NotStarted: DownloadTestResult() {
+		val msg = "Not started"
+	}
 }
-// A simple downloader to test the download speed.
 
+
+/**
+ * Download a file with known size and report the download time.
+ */
 fun downloadTest(url: URL, timeout: Int): DownloadTestResult {
 	var result: DownloadTestResult = DownloadTestResult.Pass(-1)
 	var conn: HttpURLConnection? = null
