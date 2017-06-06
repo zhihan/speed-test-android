@@ -12,12 +12,19 @@ import java.net.SocketTimeoutException
 import android.util.Log
 
 sealed class DownloadTestResult {
+	/** Timeout error */
 	data class Timeout(val error:String) : DownloadTestResult()
-	data class Pass(val time: Int): DownloadTestResult()
+	
+	/** General error, e.g., I/O error while getting the content. */
 	data class Error(val error: String): DownloadTestResult()
-	object NotStarted: DownloadTestResult() {
-		val msg = "Not started"
+
+	/** Pass */
+	data class Pass(val time: Int): DownloadTestResult()
+
+	/** Test has not finished. */
+	object None: DownloadTestResult() {
 	}
+	
 }
 
 
