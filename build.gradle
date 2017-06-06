@@ -7,6 +7,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+				classpath 'com.google.gms:google-services:3.1.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -44,4 +45,9 @@ dependencies {
    compile 'com.android.support.constraint:constraint-layout:1.0.2'
    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 	 compile 'com.google.guava:guava:22.0-android'
+	 compile 'com.google.firebase:firebase-storage:10.2.6'
+	 compile 'com.google.firebase:firebase-auth:10.2.6'
 }
+
+// ADD THIS AT THE BOTTOM
+apply plugin: 'com.google.gms.google-services'

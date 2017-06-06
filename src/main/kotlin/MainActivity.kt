@@ -15,10 +15,16 @@ import android.widget.TextView
 import android.widget.ListView
 import android.widget.BaseAdapter
 
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.AuthResult
 
 class MainActivity : AppCompatActivity() {
 	val downloadFile: String = "http://2.testdebit.info/fichiers/1Mo.dat"
 	val connectServer: String = "www.google.com"
+	var auth: FirebaseAuth? = null
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
 		val inflater = getMenuInflater()
@@ -29,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
+
+		auth = FirebaseAuth.getInstance()
 
 		val myToolbar = findViewById(R.id.my_toolbar) as Toolbar;
     setSupportActionBar(myToolbar);
@@ -42,33 +50,57 @@ class MainActivity : AppCompatActivity() {
 			override fun onClick(view: View) {
 				Log.d("SpeedTest", "Starting tests.")
 				adapter.reset()
-				val downloadTest = DownloadTest(adapter, downloadFile, { -> Unit})
+				val uploadTest = UploadTest(adapter, { -> Unit})
+				val downloadTest = DownloadTest(adapter, downloadFile,
+				{ -> uploadTest.execute()})
 				val connectTest = ConnectTest(adapter, connectServer,
 				{ -> downloadTest.execute()})
 				connectTest.execute()
 			}
 		})
   }
+	
+	override fun onStart() {
+		super.onStart()
+		val currentUser = auth?.getCurrentUser()
+		if (auth != null) {
+			val mAuth = auth as FirebaseAuth
+			mAuth.signInAnonymously().addOnFailureListener(this, object : OnFailureListener {
+				override fun onFailure(ex: Exception){
+					Log.e("SignIn", "Error: " + ex)
+				}
+			}).addOnSuccessListener(this, object : OnSuccessListener<AuthResult> {
+				override fun onSuccess(result: AuthResult) {
+					Log.d("SignIn", "Signed in " + result)
+				}
+
+			})
+		}
+	}
 }
 
 
 class MainAdapter() : BaseAdapter() {
 	var connectTestResult: ConnectTestResult = ConnectTestResult.None
 	var downloadTestResult: DownloadTestResult = DownloadTestResult.None
-
+	var uploadTestResult: UploadTestResult = UploadTestResult.None
+	
 	fun reset() {
 		connectTestResult = ConnectTestResult.None
 		downloadTestResult = DownloadTestResult.None
+		uploadTestResult = UploadTestResult.None
 		notifyDataSetChanged()
 	}
 	
-	override fun getCount(): Int { return 2 }
+	override fun getCount(): Int { return 3 }
 	override fun getItemId(position: Int): Long { return position.toLong()}
 	override fun getItem(position: Int): Object {
 		if (position == 0) {
 			return connectTestResult as Object
-		} else {
+		} else if (position == 1) {
 			return downloadTestResult as Object 
+		} else {
+			return uploadTestResult as Object
 		}
 	}
 	
@@ -81,6 +113,7 @@ class MainAdapter() : BaseAdapter() {
 		when (position) {
 			0 -> updateConnectTestResult(titleTextView, contentTextView)
 			1 -> updateDownloadTestResult(titleTextView, contentTextView)
+			2 -> updateUploadTestResult(titleTextView, contentTextView)
 		}
 		return v
 	}
@@ -118,6 +151,21 @@ class MainAdapter() : BaseAdapter() {
 			DownloadTestResult.None -> tv.setText("Waiting...")
 		}
 	}
+
+	private fun updateUploadTestResult(title: TextView, tv: TextView) {
+		title.setText("Upload:")
+		when (uploadTestResult) {
+			is UploadTestResult.Pass -> {
+				val r = uploadTestResult as UploadTestResult.Pass
+				tv.setText("Upload finished in " + r.time + "ms.")
+			}
+			is UploadTestResult.Fail -> {
+				val r = uploadTestResult as UploadTestResult.Fail
+				tv.setText("Fail: " + r.error)
+			}
+			UploadTestResult.None -> tv.setText("Waiting...")
+		}
+	}
 }
 
 /**
@@ -144,6 +192,21 @@ AsyncTask<Void, Void, Boolean>() {
 	override fun doInBackground(vararg params: Void): Boolean {
 		val result = downloadTest(URL(url), 5000)
 		adapter.downloadTestResult = result
+		return true
+	}
+
+	override fun onPostExecute(x: Boolean) {
+		adapter.notifyDataSetChanged()
+		next()
+	}
+}
+
+
+class UploadTest(val adapter: MainAdapter, val next: () -> Unit):
+AsyncTask<Void, Void, Boolean>() {
+	override fun doInBackground(vararg params: Void): Boolean {
+		val result = uploadTest(ByteArray(1024 * 1024), 5000)
+		adapter.uploadTestResult = result
 		return true
 	}
 
