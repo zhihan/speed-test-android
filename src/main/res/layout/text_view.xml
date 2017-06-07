@@ -7,13 +7,13 @@
 	<TextView
 			android:id="@+id/title"
 			android:textStyle="bold"
-			android:padding="12sp"
-      android:layout_width="wrap_content"
+			android:padding="8sp"
+      android:layout_width="100sp"
       android:layout_height="wrap_content"
       android:text="Title"/>
   <TextView
       android:id="@+id/textView"
-			android:padding="12sp"
+			android:padding="8sp"
       android:layout_width="wrap_content"
       android:layout_height="fill_parent"
       android:text="Content"/>
