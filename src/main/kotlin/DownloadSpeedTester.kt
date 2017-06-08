@@ -19,7 +19,7 @@ sealed class DownloadTestResult {
 	data class Error(val error: String): DownloadTestResult()
 
 	/** Pass */
-	data class Pass(val time: Int): DownloadTestResult()
+	data class Pass(val time: Int, val kbps: Float): DownloadTestResult()
 
 	/** Test has not finished. */
 	object None: DownloadTestResult() {
@@ -32,7 +32,7 @@ sealed class DownloadTestResult {
  * Download a file with known size and report the download time.
  */
 fun downloadTest(url: URL, timeout: Int): DownloadTestResult {
-	var result: DownloadTestResult = DownloadTestResult.Pass(-1)
+	var result: DownloadTestResult = DownloadTestResult.Pass(-1, 0.0F)
 	var conn: HttpURLConnection? = null
 	try {
 		conn = url.openConnection() as HttpURLConnection
@@ -46,7 +46,9 @@ fun downloadTest(url: URL, timeout: Int): DownloadTestResult {
 		val bytes = ByteStreams.toByteArray(conn.getInputStream())
 		val timeTaken = (System.nanoTime()-startTime)/1e6f
 		Log.d("download", "Downloaded " + bytes.size + " bytes.")
-		result = DownloadTestResult.Pass(timeTaken.toInt())
+
+		val kbps = 1024.0F * 1000 / timeTaken * 8
+		result = DownloadTestResult.Pass(timeTaken.toInt(), kbps)
 	} catch (e: IOException) {
 		result = DownloadTestResult.Error(e.toString())
 	} catch (e: SocketTimeoutException) {

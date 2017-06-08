@@ -22,7 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.AuthResult
 
 class MainActivity : AppCompatActivity() {
-	val downloadFile: String = "http://2.testdebit.info/fichiers/1Mo.dat"
+	val downloadFile: String = "https://firebasestorage.googleapis.com/v0/b/speed-test-android.appspot.com/o/download-test%2F1Mo.dat?alt=media&token=36b91619-f061-431c-9a2c-55b1bcfbcda2"
 	val connectServer: String = "www.google.com"
 	var auth: FirebaseAuth? = null
 
@@ -138,7 +138,7 @@ class MainAdapter() : BaseAdapter() {
 		when (downloadTestResult) {
 			is DownloadTestResult.Pass -> {
 				val r = downloadTestResult as DownloadTestResult.Pass
-				tv.setText("Download 1Mb in " + r.time + "ms.")
+				tv.setText("Download 1MB in " + r.time + "ms, " + r.kbps.toInt() + " kbps.")
 			}
 			is DownloadTestResult.Error -> {
 				val r = downloadTestResult as DownloadTestResult.Error
@@ -157,7 +157,7 @@ class MainAdapter() : BaseAdapter() {
 		when (uploadTestResult) {
 			is UploadTestResult.Pass -> {
 				val r = uploadTestResult as UploadTestResult.Pass
-				tv.setText("Upload finished in " + r.time + "ms.")
+				tv.setText("Upload 1 MB in " + r.time + "ms, " + r.kbps.toInt() + " kbps.")
 			}
 			is UploadTestResult.Fail -> {
 				val r = uploadTestResult as UploadTestResult.Fail
