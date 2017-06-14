@@ -8,6 +8,7 @@ import java.net.Socket
 sealed class ConnectTestResult {
 	data class Fail(val error: String) : ConnectTestResult()
 	data class Pass(val time: Int) : ConnectTestResult()
+	object Running: ConnectTestResult() {}
 	object None : ConnectTestResult() {}
 }
 

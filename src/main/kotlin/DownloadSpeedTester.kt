@@ -22,9 +22,10 @@ sealed class DownloadTestResult {
 	data class Pass(val time: Int, val kbps: Float): DownloadTestResult()
 
 	/** Test has not finished. */
-	object None: DownloadTestResult() {
-	}
+	object None: DownloadTestResult() {}
 	
+	/** Test has started */
+	object Running: DownloadTestResult() {}
 }
 
 

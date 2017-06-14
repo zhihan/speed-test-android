@@ -16,6 +16,8 @@ sealed class UploadTestResult {
 	data class Pass(val time: Int, val url: String, val kbps: Float): UploadTestResult() 
 
 	object None: UploadTestResult() {}
+
+	object Running: UploadTestResult() {}
 }
 
 fun uploadTest(bytes: ByteArray, timeout: Int): UploadTestResult {

@@ -50,12 +50,12 @@ class MainActivity : AppCompatActivity() {
 			override fun onClick(view: View) {
 				Log.d("SpeedTest", "Starting tests.")
 				adapter.reset()
-				val uploadTest = UploadTest(adapter, { -> Unit})
-				val downloadTest = DownloadTest(adapter, downloadFile,
-				{ -> uploadTest.execute()})
-				val connectTest = ConnectTest(adapter, connectServer,
-				{ -> downloadTest.execute()})
-				connectTest.execute()
+				val uploadTest = UploadTest(adapter)
+				val downloadTest = DownloadTest(adapter, downloadFile)
+				val connectTest = ConnectTest(adapter, connectServer)
+				connectTest.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR)
+				downloadTest.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR)
+				uploadTest.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR)
 			}
 		})
   }
@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
 				override fun onSuccess(result: AuthResult) {
 					Log.d("SignIn", "Signed in " + result)
 				}
-
 			})
 		}
 	}
@@ -130,6 +129,7 @@ class MainAdapter() : BaseAdapter() {
 				tv.setText("Fail: " + r.error)
 			}
 			ConnectTestResult.None -> tv.setText("Waiting...")
+			ConnectTestResult.Running -> tv.setText("Running...")
 		}
 	}
 
@@ -149,6 +149,7 @@ class MainAdapter() : BaseAdapter() {
 				tv.setText("Timeout: " + r.error)
 			}
 			DownloadTestResult.None -> tv.setText("Waiting...")
+			DownloadTestResult.Running -> tv.setText("Running...")
 		}
 	}
 
@@ -164,6 +165,7 @@ class MainAdapter() : BaseAdapter() {
 				tv.setText("Fail: " + r.error)
 			}
 			UploadTestResult.None -> tv.setText("Waiting...")
+			UploadTestResult.Running -> tv.setText("Running...")
 		}
 	}
 }
@@ -171,10 +173,12 @@ class MainAdapter() : BaseAdapter() {
 /**
  *  Test the total time to establish a TCP connection to a server.
  */
-class ConnectTest(val adapter: MainAdapter, val url: String, val next: () -> Unit):
+class ConnectTest(val adapter: MainAdapter, val url: String):
 AsyncTask<Void, Void, Boolean>() {
 	
 	override fun doInBackground(vararg params: Void): Boolean {
+		adapter.connectTestResult = ConnectTestResult.Running
+		adapter.notifyDataSetChanged()
 		val result = connectionTest(url, 5000)
 		adapter.connectTestResult = result
 		return true
@@ -182,14 +186,16 @@ AsyncTask<Void, Void, Boolean>() {
 
 	override fun onPostExecute(result: Boolean) {
 		adapter.notifyDataSetChanged()
-		next()
 	}
 }
 
 
-class DownloadTest(val adapter: MainAdapter, val url: String, val next: () -> Unit):
+class DownloadTest(val adapter: MainAdapter, val url: String):
 AsyncTask<Void, Void, Boolean>() {
 	override fun doInBackground(vararg params: Void): Boolean {
+		adapter.downloadTestResult = DownloadTestResult.Running
+		adapter.notifyDataSetChanged()
+		
 		val result = downloadTest(URL(url), 5000)
 		adapter.downloadTestResult = result
 		return true
@@ -197,14 +203,16 @@ AsyncTask<Void, Void, Boolean>() {
 
 	override fun onPostExecute(x: Boolean) {
 		adapter.notifyDataSetChanged()
-		next()
 	}
 }
 
 
-class UploadTest(val adapter: MainAdapter, val next: () -> Unit):
+class UploadTest(val adapter: MainAdapter):
 AsyncTask<Void, Void, Boolean>() {
 	override fun doInBackground(vararg params: Void): Boolean {
+		adapter.uploadTestResult = UploadTestResult.Running
+		adapter.notifyDataSetChanged()
+		
 		val result = uploadTest(ByteArray(1024 * 1024), 5000)
 		adapter.uploadTestResult = result
 		return true
@@ -212,6 +220,5 @@ AsyncTask<Void, Void, Boolean>() {
 
 	override fun onPostExecute(x: Boolean) {
 		adapter.notifyDataSetChanged()
-		next()
 	}
 }
