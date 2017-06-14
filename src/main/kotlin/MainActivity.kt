@@ -26,21 +26,12 @@ class MainActivity : AppCompatActivity() {
 	val connectServer: String = "www.google.com"
 	var auth: FirebaseAuth? = null
 
-	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		val inflater = getMenuInflater()
-		inflater.inflate(R.menu.main_menu, menu)
-		return true
-	}
-	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
 		auth = FirebaseAuth.getInstance()
 
-		val myToolbar = findViewById(R.id.my_toolbar) as Toolbar;
-    setSupportActionBar(myToolbar);
-		
 		val rv = findViewById(R.id.my_list_view) as ListView
 		val adapter = MainAdapter()
 		rv.setAdapter(adapter)
