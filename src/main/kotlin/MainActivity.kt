@@ -166,10 +166,12 @@ class MainAdapter() : BaseAdapter() {
  */
 class ConnectTest(val adapter: MainAdapter, val url: String):
 AsyncTask<Void, Void, Boolean>() {
-	
-	override fun doInBackground(vararg params: Void): Boolean {
+	override fun onPreExecute() {
 		adapter.connectTestResult = ConnectTestResult.Running
 		adapter.notifyDataSetChanged()
+	}
+	
+	override fun doInBackground(vararg params: Void): Boolean {
 		val result = connectionTest(url, 5000)
 		adapter.connectTestResult = result
 		return true
@@ -183,10 +185,12 @@ AsyncTask<Void, Void, Boolean>() {
 
 class DownloadTest(val adapter: MainAdapter, val url: String):
 AsyncTask<Void, Void, Boolean>() {
-	override fun doInBackground(vararg params: Void): Boolean {
+	override fun onPreExecute() {
 		adapter.downloadTestResult = DownloadTestResult.Running
 		adapter.notifyDataSetChanged()
-		
+	}
+	
+	override fun doInBackground(vararg params: Void): Boolean {		
 		val result = downloadTest(URL(url), 5000)
 		adapter.downloadTestResult = result
 		return true
@@ -200,9 +204,12 @@ AsyncTask<Void, Void, Boolean>() {
 
 class UploadTest(val adapter: MainAdapter):
 AsyncTask<Void, Void, Boolean>() {
-	override fun doInBackground(vararg params: Void): Boolean {
+	override fun onPreExecute() {
 		adapter.uploadTestResult = UploadTestResult.Running
 		adapter.notifyDataSetChanged()
+	}
+	
+	override fun doInBackground(vararg params: Void): Boolean {
 		
 		val result = uploadTest(ByteArray(1024 * 1024), 5000)
 		adapter.uploadTestResult = result
